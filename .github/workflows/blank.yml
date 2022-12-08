@@ -1,0 +1,25 @@
+name: trigger application workflow
+
+# Controls when the workflow will run
+on: [repository_dispatch]
+
+jobs:
+ 
+ trigger:  
+    runs-on: ubuntu-latest
+    environment: "${{ github.event.client_payload.environment }}"
+    env:
+      url: "https://api.github.com/repos/${{ github.event.client_payload.repository }}/actions/workflows/${{ github.event.client_payload.workflow_id }}/dispatches"
+      envir: "${{ github.event.client_payload.environment }}"
+   
+    steps:
+      - name: fetch secret
+        if: github.event.action == 'application' 
+        run: |
+          curl -X POST $url \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          -u ${{ secrets.ACCESS_TOKEN }} \
+          --data '{"ref": "${{ github.event.client_payload.ref }}", "inputs": { "accesskey": "${{ secrets.ACCESS_ID }}", "environment": "${{ github.event.client_payload.environment }}" }}'
+         # export ACCESSKEY="${{secrets.ACCESS_ID}}"
+
+   
